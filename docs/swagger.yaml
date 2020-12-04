@@ -1,0 +1,152 @@
+openapi: 3.0.2
+info:
+  title: Hanna-Liisa Vilms Panga-API
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost:3000'
+    description: Local development server
+paths:
+  /users:
+    summary: User related operations
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postUsersRequest'
+        required: true
+      tags:
+        - users
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userObject'
+              examples:
+                User has been created:
+                  value:
+                    id: 5fca110e704eba035aa70f69
+                    name: Tommy Shelby
+                    username: Tommy123
+                    accounts:
+                      -
+                        name: Main
+                        balance: 5000
+                        currency: EUR
+                        number: EEE1a4f53a668e9055255c82a49c2b64120
+          description: User has been created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Invalid password:
+                  value:
+                    error: Invalid password
+                Invalid name:
+                  value:
+                    error: Invalid name
+                Invalid username:
+                  value:
+                    error: Invalid username
+          description: Bad request
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Username already exists:
+                  value:
+                    error: Username already exists
+          description: Username already exists
+      summary: Registers a new user
+components:
+  schemas:
+    postUsersRequest:
+      title: POST /users request
+      description: ''
+      required:
+        - name
+        - username
+        - password
+      type: object
+      properties:
+        name:
+          description: User`s full name
+          type: string
+        username:
+          description: Chosen username
+          type: string
+        password:
+          description: Chosen password
+          type: string
+      example:
+        name: Tommy Shelby
+        username: Tommy123
+        password: tommyparool
+    userObject:
+      title: userObject
+      description: ''
+      type: object
+      properties:
+        id:
+          description: User´s ID
+          type: string
+        name:
+          description: User`s full name
+          type: string
+        username:
+          description: Chosen username
+          type: string
+        accounts:
+          description: Array of user`s bank accounts
+          type: array
+          items:
+            $ref: '#/components/schemas/accountObject'
+      example:
+        id: 5f79bab312c4877b900f9a55
+        name: Tommy
+        username: Tommy123
+        accounts:
+          -
+            name: Main
+            balance: 5000
+            currency: EUR
+            number: EEE1a4f53a668e9055255c82a49c2b64120
+            id: 5fca110e704eba035aa70f69
+    accountObject:
+      title: accountObject
+      description: ''
+      type: object
+      properties:
+        name:
+          description: Account name
+          type: string
+        balance:
+          format: int32
+          description: Funds the account holds
+          type: integer
+        currency:
+          description: Funds currency
+          type: string
+        number:
+          description: Account number
+          type: string
+      example:
+        name: Main
+        balance: 5000
+        currency: EUR
+        number: EEE1a4f53a668e9055255c82a49c2b64120
+    errorResponse:
+      title: error response
+      description: error response
+      type: object
+      properties:
+        error:
+          type: string
+      example:
+        error: Error message
