@@ -2,6 +2,9 @@ const router = require('express').Router();
 const User = require('../models/User');
 const Account = require('../models/Account');
 const bcrypt = require('bcrypt');
+const userModel = require('../models/User');
+const accountModel = require('../models/Account');
+const {verifyToken} = require('../middlewares');
 
 router.post('/', async (req, res, next) => {
 
@@ -55,6 +58,28 @@ router.post('/', async (req, res, next) => {
         // Handle other errors
         res.status(409).send({error: e.message})
     }
+});
+
+router.get('/current', verifyToken, async (req, res, next) => {
+
+    try {
+        // Get user object from DB
+        const user = await User.findOne({_id: req.userId});
+        console.log(user);
+        // Get user's accounts
+        const accounts = await Account.find({userId: req.userId});
+        console.log(accounts);
+        res.status(200).json({
+            id: user.id,
+            name: user.name,
+            username: user.username,
+            accounts: accounts
+        })
+    } catch (e) {
+        res.status(400).send({error: e.message});
+        console.log(e);
+    }
+
 });
 
 module.exports = router;
