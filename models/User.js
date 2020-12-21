@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 module.exports = mongoose.model('User', mongoose.Schema({
     name: {
@@ -12,7 +12,7 @@ module.exports = mongoose.model('User', mongoose.Schema({
     },
     accounts: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Account'
+        ref: "Account"
     }]
 }, {
     toJSON: {

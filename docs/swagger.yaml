@@ -4,6 +4,9 @@ info:
   version: 1.0.0
 servers:
   -
+    url: 'https://vilms.xyz'
+    description: Production server
+  -
     url: 'http://localhost:3000'
     description: Local development server
 paths:
@@ -64,6 +67,64 @@ paths:
                     error: Username already exists
           description: Username already exists
       summary: Registers a new user
+      /sessions:
+        post:
+          requestBody:
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/postSessionsRequest'
+            required: true
+          tags:
+            - sessions
+          responses:
+            '200':
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/postSessionsResponse'
+              description: User logged in succesfully
+            '400':
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    Missing username or password:
+                      value:
+                        error: Missing username or password
+              description: Missing username or password
+            '401':
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    Invalid username or password:
+                      value:
+                        error: Invalid username or password
+              description: Invalid username or password
+          summary: Logs the user in
+        delete:
+          tags:
+            - sessions
+          responses:
+            '204':
+              description: User logged out successfully
+            '401':
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/errorResponse'
+                  examples:
+                    Missing Authorization header:
+                      value:
+                        error: Missing Authorization header
+                    Invalid token:
+                      value:
+                        error: Invalid token
+              description: Unauthorized
+          summary: Logs the user out
 components:
   schemas:
     postUsersRequest:

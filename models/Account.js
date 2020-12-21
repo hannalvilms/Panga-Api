@@ -13,7 +13,7 @@ module.exports = mongoose.model('Account', mongoose.Schema({
         type: String, required: true, min: 3, max: 255, default: 'Main'
     },
     balance: {
-        type: Number, required: true, min: 0, default: 5000
+        type: Number, required: true, min: 0, default: 100000
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId, ref: 'User'

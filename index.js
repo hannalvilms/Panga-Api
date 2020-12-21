@@ -1,34 +1,42 @@
 const express = require('express');
+const app = express();
 const mongoose = require('mongoose');
-
-const usersRoute = require('./routes/users');
-const sessionsRoute = require('./routes/sessions');
-const User = require('./models/User');
-const env = require('dotenv').config();
-
 const swaggerUi = require('swagger-ui-express');
 const yaml = require('yamljs');
-const swaggerDocument = yaml.load('docs/swagger.yaml');
+const swaggerDocument = yaml.load('./docs/swagger.yaml');
+const { processTransactions } = require('./middlewares');
 
-// Connect to database
-mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Connection error: '));
-db.once('open', function(){
-    console.log('Connected!');
-});
+//Copy env variables to process.env
+require('dotenv').config();
 
-const app = express();
-
-app.use(express.json());
-
-// Run middlewares
+//Run middlewares
 app.use(express.json());
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Routes
+//Import routes
+const usersRoute = require('./routes/users');
+const sessionsRoute = require('./routes/sessions');
+const transactionsRoute = require('./routes/transactions');
+
+//Attach routes
 app.use('/users', usersRoute);
 app.use('/sessions', sessionsRoute);
-app.listen(3000);
+app.use('/transactions', transactionsRoute);
+app.use('/jwks', function(req, res) {
+    res.redirect('https://vilms.xyz/transactions/jwks')});
 
-module.exports = app;
+//Connect to database
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true
+}, ()=>{
+    console.log('Connected to DB!')
+});
+
+processTransactions();
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server running on http://vilms.xyz:` + process.env.PORT)
+});

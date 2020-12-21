@@ -29,7 +29,7 @@ router.post('/', async (req, res) => {
         });
 
         // Return token to user
-        return res.status(200).json({
+        return res.status(201).json({
             token: session._id
         })
     }
