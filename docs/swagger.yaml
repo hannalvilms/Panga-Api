@@ -1,17 +1,17 @@
 openapi: 3.0.2
 info:
-  title: Hanna-Liisa Vilms Panga-API
+  title: Hanna-Liisa Vilms - Panga API
   version: 1.0.0
 servers:
   -
     url: 'https://vilms.xyz'
     description: Production server
   -
-    url: 'http://localhost:3000'
+    url: 'http://localhost:8080'
     description: Local development server
 paths:
   /users:
-    summary: User related operations
+    description: User related operations
     post:
       requestBody:
         content:
@@ -27,18 +27,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/userObject'
-              examples:
-                User has been created:
-                  value:
-                    id: 5fca110e704eba035aa70f69
-                    name: Tommy Shelby
-                    username: Tommy123
-                    accounts:
-                      -
-                        name: Main
-                        balance: 5000
-                        currency: EUR
-                        number: EEE1a4f53a668e9055255c82a49c2b64120
           description: User has been created
         '400':
           content:
@@ -67,64 +55,303 @@ paths:
                     error: Username already exists
           description: Username already exists
       summary: Registers a new user
-      /sessions:
-        post:
-          requestBody:
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/postSessionsRequest'
-            required: true
-          tags:
-            - sessions
-          responses:
-            '200':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/postSessionsResponse'
-              description: User logged in succesfully
-            '400':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    Missing username or password:
-                      value:
-                        error: Missing username or password
-              description: Missing username or password
-            '401':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    Invalid username or password:
-                      value:
-                        error: Invalid username or password
-              description: Invalid username or password
-          summary: Logs the user in
-        delete:
-          tags:
-            - sessions
-          responses:
-            '204':
-              description: User logged out successfully
-            '401':
-              content:
-                application/json:
-                  schema:
-                    $ref: '#/components/schemas/errorResponse'
-                  examples:
-                    Missing Authorization header:
-                      value:
-                        error: Missing Authorization header
-                    Invalid token:
-                      value:
-                        error: Invalid token
-              description: Unauthorized
-          summary: Logs the user out
+  /users/current:
+    get:
+      tags:
+        - users
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getUsersCurrentResponse'
+          description: Succesful request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Missing Authorization header:
+                  value:
+                    error: Missing Authorization header
+                Invalid token:
+                  value:
+                    error: Invalid token
+          description: Unauthorized
+      security:
+        -
+          Authorization: []
+      summary: Returns currently logged in user´s data
+  /sessions:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postSessionsRequest'
+        required: true
+      tags:
+        - sessions
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/postSessionsResponse'
+          description: Session token has been created
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Invalid username/password:
+                  value:
+                    error: Invalid username/password
+          description: Invalid username/password
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Missing username or password:
+                  value:
+                    error: Missing username or password
+          description: Missing username or password
+      summary: Create new session token for user (log in)
+    delete:
+      tags:
+        - sessions
+      responses:
+        '204':
+          description: Session token has been deleted
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Invalid Authorization header format:
+                  value:
+                    error: Invalid Authorization header format
+          description: Invalid Authorization header format
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Missing Authorization header:
+                  value:
+                    error: Missing Authorization header
+                Invalid token:
+                  value:
+                    error: Invalid token
+          description: Missing Authorization header
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Invalid session:
+                  value:
+                    error: Invalid session
+          description: Invalid session
+      security:
+        -
+          Authorization: []
+      summary: Delete session token (log out)
+  /transactions:
+    get:
+      tags:
+        - transactions
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                Transaction history:
+                  value:
+                    name: Tommy Shelby
+                    transactions:
+                      -
+                        senderName: Tommy Shelby
+                        accountFrom: c38d7c65450eed9996c38caffae560c503a
+                        amount: 15
+                        accountTo: c382b88e8380238d1f878d32cfaf02ef1a0
+                        createdAt: '2020-12-21T21:00:00.057Z'
+                        receiverName: kristjan
+                      -
+                        senderName: Tommy Shelby
+                        accountFrom: c38d7c65450eed9996c38caffae560c503a
+                        amount: 200
+                        accountTo: c382b88e8380238d1f878d32cfaf02ef1a0
+                        createdAt: '2020-12-25T09:20:44.289Z'
+                        receiverName: kristjan
+          description: OK
+      security:
+        -
+          Authorization: []
+      summary: Get user`s transaction history
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postTransactionsRequest'
+        required: true
+      tags:
+        - transactions
+      responses:
+        '201':
+          content:
+            application/json: {}
+          description: Transaction has been successfully queued for processing
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                invalidAmount:
+                  value:
+                    error: Invalid amount
+                invalidAccountTo:
+                  value:
+                    error: Invalid accountTo
+          description: Invalid amount
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                missingAuthorizationHeader:
+                  value:
+                    error: Missing authorizzation header
+          description: Unauthorized
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                insufficinentFunds:
+                  value:
+                    error: Insufficient funds
+          description: Payment required
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                forbidden:
+                  value:
+                    error: Forbidden
+          description: The accountFrom does not belong to the user
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                accountNotFound:
+                  value:
+                    error: Account not found
+          description: Account not found
+      security:
+        -
+          Authorization: []
+      summary: Transfer funds
+  /transactions/b2b:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postTransactionsb2bRequest'
+        required: true
+      tags:
+        - transactions
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                receiverName:
+                  value:
+                    receiverName: kristjan
+          description: 'Transaction was successful, money was transferred to '
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Parsing JWT payload failed:
+                  value:
+                    error: 'Parsing JWT payload failed: '
+                The account sending the funds does not belong to a bank registered in Central Bank:
+                  value:
+                    error: >-
+                      The account sending the funds does not belong to a bank registered
+                      in Central Bank
+                'Cannot verify your signature: The jwksUrl of your bank is invalid:':
+                  value:
+                    error: >-
+                      Cannot verify your signature: The jwksUrl of your bank  is
+                      invalid:
+                Invalid signature:
+                  value:
+                    error: Invalid signature
+          description: Parsing JWT payload failed
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Account not found:
+                  value:
+                    error: Account not found
+          description: Account not found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                'Cannot verify your signature: The jwksUrl of your bank is missing':
+                  value:
+                    error: 'Cannot verify your signature: The jwksUrl of your bank is missing'
+          description: 'Cannot verify your signature: The jwksUrl of your bank is missing'
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                Central Bank error:
+                  value:
+                    error: 'Central Bank error: '
+          description: Central Bank error
+      summary: Accepts external bank transfers
+  /transactions/jwks:
+    get:
+      tags:
+        - transactions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getTransactionsJwksResponse'
+          description: Successful operation
+      summary: Get bank public key
 components:
   schemas:
     postUsersRequest:
@@ -137,18 +364,51 @@ components:
       type: object
       properties:
         name:
-          description: User`s full name
+          description: Users full name
           type: string
         username:
-          description: Chosen username
+          description: Username
           type: string
         password:
-          description: Chosen password
+          description: Password
           type: string
       example:
         name: Tommy Shelby
         username: Tommy123
-        password: tommyparool
+        password: TommyParool
+    postSessionsRequest:
+      title: POST /sessions request
+      description: ''
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      example:
+        username: Tommy123
+        password: TommyParool
+    postSessionsResponse:
+      title: POST /sessions response
+      description: Session has been created
+      required: []
+      type: object
+      properties:
+        token:
+          description: User`s session token
+          type: string
+      example:
+        token: 5fe105af60d981c29790f094
+    deleteSessionsRequest:
+      title: DELETE /sessions request
+      description: ''
+      type: object
+      properties:
+        Authorization:
+          type: string
+      example:
+        Authorization: >-
+          eyJhbGciOiJSUzI1NiIsImtpZCI6InlXdXNucENmeGFoX1FWZFNoSU1PYjRhY2x3UXQ0TjVMM1VIU291MTFMMW8ifQ.eyJhY2NvdW50RnJvbSI6ImMzOGQ3YzY1NDUwZWVkOTk5NmMzOGNhZmZhZTU2MGM1MDNhIiwiYWNjb3VudFRvIjoiYzM4MmI4OGU4MzgwMjM4ZDFmODc4ZDMyY2ZhZjAyZWYxYTAiLCJjdXJyZW5jeSI6IkVVUiIsImFtb3VudCI6MTUsImV4cGxhbmF0aW9uIjoidGVzdCIsInNlbmRlck5hbWUiOiJUb21teSBTaGVsYnkifQ.OVo89aZdjWspeb91bGVPsQqM1s2uNaE5w__IsGJvPHqBi4PTXj7AMc0gZOD2FnIwaO5cqnMDr2YiTpnyWWBvWV4eW31UW6qUoaU14L59uLhmxdsNi_9XrFrCVfBIrES86qoFNd_utwfpw9_MGsSkk6eh3hCD16McvrnKBG7c8JI
     userObject:
       title: userObject
       description: ''
@@ -161,53 +421,136 @@ components:
           description: User`s full name
           type: string
         username:
-          description: Chosen username
+          description: Username
           type: string
         accounts:
+          $ref: '#/components/schemas/account'
           description: Array of user`s bank accounts
-          type: array
-          items:
-            $ref: '#/components/schemas/accountObject'
       example:
-        id: 5f79bab312c4877b900f9a55
-        name: Tommy
+        id: 5fe106c760d981c29790f09a
+        name: Tommy Shelby
         username: Tommy123
         accounts:
           -
             name: Main
-            balance: 5000
+            balance: 10000
             currency: EUR
-            number: EEE1a4f53a668e9055255c82a49c2b64120
-            id: 5fca110e704eba035aa70f69
-    accountObject:
-      title: accountObject
-      description: ''
-      type: object
-      properties:
-        name:
-          description: Account name
-          type: string
-        balance:
-          format: int32
-          description: Funds the account holds
-          type: integer
-        currency:
-          description: Funds currency
-          type: string
-        number:
-          description: Account number
-          type: string
-      example:
-        name: Main
-        balance: 5000
-        currency: EUR
-        number: EEE1a4f53a668e9055255c82a49c2b64120
+            number: c38d7c65450eed9996c38caffae560c503a
     errorResponse:
       title: error response
-      description: error response
+      description: Generic error response
       type: object
       properties:
         error:
           type: string
       example:
         error: Error message
+    getUsersCurrentResponse:
+      title: GET /users/current response
+      description: ''
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        username:
+          type: string
+        accounts:
+          description: Array of user`s accounts
+          type: array
+          items:
+            $ref: '#/components/schemas/account'
+      example:
+        id: 5fe106c760d981c29790f09a
+        name: Tommy Shelby
+        username: Tommy123
+        accounts:
+          -
+            name: Main
+            balance: 10000
+            currency: EUR
+            number: c38d7c65450eed9996c38caffae560c503a
+    account:
+      title: account
+      description: ''
+      type: object
+      properties:
+        name:
+          type: string
+        balance:
+          type: integer
+        currency:
+          type: string
+        number:
+          type: string
+      example:
+        name: Main
+        balance: 10000
+        currency: EUR
+        number: c38d7c65450eed9996c38caffae560c503a
+    postTransactionsRequest:
+      title: POST /transactions request
+      description: ''
+      type: object
+      properties:
+        accountFrom:
+          description: Sender`s bank account
+          type: string
+        accountTo:
+          description: Receiver`s bank account
+          type: string
+        amount:
+          format: int32
+          description: The sum
+          type: integer
+        explanation:
+          description: Purpose of the transaction
+          type: string
+      example:
+        accountFrom: c38d7c65450eed9996c38caffae560c503a
+        accountTo: c382b88e8380238d1f878d32cfaf02ef1a0
+        amount: 150
+        explanation: häid jõule
+    postTransactionsb2bRequest:
+      title: POST /transactions/b2b request
+      description: ''
+      type: object
+      properties:
+        jwt:
+          description: Jason Web Token that contains the transaction information
+          type: string
+      example:
+        jwt: >-
+          eyJhbGciOiJSUzI1NiIsImtpZCI6InlXdXNucENmeGFoX1FWZFNoSU1PYjRhY2x3UXQ0TjVMM1VIU291MTFMMW8ifQ.eyJhY2NvdW50RnJvbSI6ImMzOGQ3YzY1NDUwZWVkOTk5NmMzOGNhZmZhZTU2MGM1MDNhIiwiYWNjb3VudFRvIjoiYzM4MmI4OGU4MzgwMjM4ZDFmODc4ZDMyY2ZhZjAyZWYxYTAiLCJjdXJyZW5jeSI6IkVVUiIsImFtb3VudCI6MTUsImV4cGxhbmF0aW9uIjoidGVzdCIsInNlbmRlck5hbWUiOiJUb21teSBTaGVsYnkifQ.OVo89aZdjWspeb91bGVPsQqM1s2uNaE5w__IsGJvPHqBi4PTXj7AMc0gZOD2FnIwaO5cqnMDr2YiTpnyWWBvWV4eW31UW6qUoaU14L59uLhmxdsNi_9XrFrCVfBIrES86qoFNd_utwfpw9_MGsSkk6eh3hCD16McvrnKBG7c8JI
+    getTransactionsJwksResponse:
+      title: GET /transactions/jwks response
+      description: ''
+      type: object
+      properties:
+        keys:
+          description: public key
+          type: array
+          items:
+            type: object
+            properties:
+              kty:
+                type: string
+              kid:
+                type: string
+              'n':
+                type: string
+              e:
+                type: string
+      example:
+        keys:
+          -
+            kty: RSA
+            kid: yWusnpCfxah_QVdShIMOb4aclwQt4N5L3UHSou11L1o
+            'n': >-
+              bEa_nrRnFCaD1UbNGKQ14v_d9qChynHY5muZKQeqRdoJsUTMKlcVOLM9TASpL3bNvV87k16CiWUurP4CIQGztHNimBrGM2DtaPyekJFa5eYsv62LRPmCZ2y3oAt8A9jhTK5Q-u88OKXhPjTuEcyd7BaFLt3GyLd4Z8kJLfmApnk
+            e: AQAB
+  securitySchemes:
+    Authorization:
+      scheme: bearer
+      type: http

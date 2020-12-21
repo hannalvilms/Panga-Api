@@ -110,6 +110,7 @@ router.post('/b2b', async (req, res, next) => {
         console.log('/b2b: Received this payload: ' + JSON.stringify(transaction))
 
     } catch (e) {
+        console.log(jwt);
         return res.status(400).json({error: 'Parsing JWT payload failed: ' + e.message})
     }
 
@@ -249,6 +250,12 @@ router.post('/b2b', async (req, res, next) => {
     // Send receiverName
     res.json({receiverName: accountToOwner.name})
 
+})
+
+router.get('/', verifyToken, async (req, res, next) => {
+
+    const transactions = await transactionModel.find({userId: req.userId})
+    res.status(200).json(transactions)
 })
 
 router.get('/jwks', async (req, res, next) => {

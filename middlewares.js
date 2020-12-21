@@ -140,7 +140,7 @@ exports.processTransactions = async () => {
             explanation: transaction.explanation,
             senderName: transaction.senderName
         }), 'utf8').final()
-
+    console.log(jwt);
         // Send request to remote bank
         try {
 
