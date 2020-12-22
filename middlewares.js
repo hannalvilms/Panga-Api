@@ -144,6 +144,22 @@ exports.processTransactions = async () => {
         // Send request to remote bank
         try {
 
+            const nock = require('nock')
+            let nockScope
+
+            if (process.env.TEST_MODE === 'true') {
+
+                const nockUrl = new URL(bankTo.transactionUrl)
+
+                console.log('Nocking '+ JSON.stringify(nockUrl));
+
+                nockScope = nock(`${nockUrl.protocol}//${nockUrl.host}`)
+                    .persist()
+                    .post(nockUrl.pathname)
+                    .reply(200, {receiverName: 'Kristjan'})
+
+            }
+
             console.log('loop: Making request to ' + bankTo.transactionUrl);
 
             // Abort connection after 1 sec
@@ -242,10 +258,39 @@ exports.processTransactions = async () => {
  * Refreshes the list of known banks from Central Bank
  * @returns {Promise<{error: *}>}
  */
+
 exports.refreshBanksFromCentralBank = async () => {
+
+    let nockScope, nock
 
     try {
         console.log('Refreshing banks');
+
+        if (process.env.TEST_MODE === 'true') {
+            nock = require('nock')
+            console.log(process.env.TEST_MODE === 'true');
+            nockScope = nock(process.env.CENTRAL_BANK_URL)
+                .persist()
+                .get('/banks')
+                .reply(200,
+                    [
+                        {
+                            "name": "LHV",
+                            "owners": "Tommy Shelby",
+                            "jwksUrl": "https://lhv.com/jwks",
+                            "transactionUrl": "https://lhv.com/transactions/b2b",
+                            "bankPrefix": "EEE"
+                        },
+                        {
+                            "name": "SEB",
+                            "owners": "Ada Shelby",
+                            "jwksUrl": "https://seb.com/jwks",
+                            "transactionUrl": "https://seb.com/transactions/b2b",
+                            "bankPrefix": "BBB"
+                        }
+                    ]
+                )
+        }
 
         console.log('Attempting to contact central bank at ' + `${process.env.CENTRAL_BANK_URL}/banks`)
         banks = await fetch(`${process.env.CENTRAL_BANK_URL}/banks`, {
@@ -270,7 +315,7 @@ exports.refreshBanksFromCentralBank = async () => {
     } catch (e) {
         return {error: e.message}
     }
-
+    console.log(e.message);
     return true
 
 }
