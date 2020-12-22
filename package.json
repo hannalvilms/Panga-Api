@@ -19,6 +19,7 @@
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.3",
+    "nock": "^13.0.5",
     "node-fetch": "^2.6.1",
     "node-jose": "^2.0.0",
     "nodemon": "^2.0.6",
